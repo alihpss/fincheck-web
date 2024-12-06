@@ -22,7 +22,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             `bg-white w-full rounded-lg border border-gray-500 px-3 h-[52px]
           text-gray-800 peer pt-4 placeholder-shown:pt-0 focus:border-gray-800
           transition-all outline-none`,
-            { "!border-red-900": !!error }
+            error && "!border-red-900",
+            className
           )}
           placeholder=""
         />
@@ -32,8 +33,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           className={cn(
             `absolute text-xs left-[13px] top-2 pointer-events-none text-gray-700
               peer-placeholder-shown:text-base peer-placeholder-shown:top-3.5
-              peer-placeholder-shown:left-[13px] transition-all`,
-            className
+              peer-placeholder-shown:left-[13px] transition-all`
           )}
         >
           {placeholder}
