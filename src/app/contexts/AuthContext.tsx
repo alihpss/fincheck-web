@@ -1,9 +1,10 @@
-import React, { createContext, useCallback, useEffect, useState } from "react";
-import { localStorageKeys } from "../config/localStorageKeys";
 import { useQuery } from "@tanstack/react-query";
-import { usersService } from "../services/usersService";
+import React, { createContext, useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { LaunchScreen } from "../../view/components/LaunchScreen";
+import { localStorageKeys } from "../config/localStorageKeys";
+import { User } from "../entities/User";
+import { usersService } from "../services/usersService";
 
 interface ChildrenType {
   children: React.ReactNode;
@@ -13,6 +14,7 @@ interface AuthContextValue {
   signedIn: boolean;
   signin: (accessToken: string) => void;
   signout: () => void;
+  user?: User;
 }
 
 export const AuthContext = createContext({} as AuthContextValue);
@@ -26,7 +28,7 @@ export function AuthProvider({ children }: ChildrenType) {
     return !!storageAccessToken;
   });
 
-  const { isError, isFetching, isSuccess } = useQuery({
+  const { isError, isFetching, isSuccess, data } = useQuery({
     queryKey: ["users", "me"],
     queryFn: () => {
       return usersService.me();
@@ -60,6 +62,7 @@ export function AuthProvider({ children }: ChildrenType) {
         signedIn: isSuccess && signedIn,
         signin,
         signout,
+        user: data,
       }}
     >
       <LaunchScreen isLoading={isFetching} />
