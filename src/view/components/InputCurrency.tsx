@@ -4,7 +4,7 @@ import { cn } from "../../app/utils/cn";
 
 interface InputCurrencyProps {
   error?: string;
-  onChange?: (value: string) => void;
+  onChange?: (value: string | number) => void;
   value?: string | number;
 }
 
@@ -20,8 +20,12 @@ export function InputCurrency({ error, onChange, value }: InputCurrencyProps) {
           "text-gray-800 text-[32px] font-bold tracking-[-1px] w-full outline-none",
           error && "text-red-900"
         )}
-        onValueChange={({ value }) => {
-          onChange?.(value);
+        onValueChange={({ floatValue }) => {
+          console.log("🚀 ~ InputCurrency ~ floatValue:", floatValue);
+
+          if (floatValue !== undefined) {
+            onChange?.(floatValue);
+          }
         }}
       />
       {error && (

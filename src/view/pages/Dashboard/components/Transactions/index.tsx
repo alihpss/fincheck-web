@@ -1,17 +1,19 @@
-import { FilterIcon } from "../../../../components/icons/FilterIcon";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { MONTHS } from "../../../../../app/config/constants";
-import { SliderOption } from "./SliderOption";
-import { SliderNavigation } from "./SliderNavigation";
+import { cn } from "../../../../../app/utils/cn";
 import { formatCurrency } from "../../../../../app/utils/formatCurrency";
 import { CategoryIcon } from "../../../../components/icons/categories/CategoryIcon";
-import { useTransactionsController } from "./useTransactionsController";
-import { cn } from "../../../../../app/utils/cn";
+import { FilterIcon } from "../../../../components/icons/FilterIcon";
 import { Spinner } from "../../../../components/Spinner";
+import { SliderNavigation } from "./SliderNavigation";
+import { SliderOption } from "./SliderOption";
+import { useTransactionsController } from "./useTransactionsController";
 
+import { formatDate } from "../../../../../app/utils/formatDate";
 import emptyStateImage from "../../../../../assets/empty-state.svg";
-import { TransactionTypeDropdown } from "./TransactionTypeDropdown";
+import { EditTransactionModal } from "../../modals/EditTransactionModal";
 import { FiltersModal } from "./FiltersModal";
+import { TransactionTypeDropdown } from "./TransactionTypeDropdown";
 
 export function Transactions() {
   const {
@@ -22,6 +24,13 @@ export function Transactions() {
     handleCloseFiltersModal,
     handleOpenFiltersModal,
     isFiltersModalOpen,
+    handleChangeFilters,
+    filters,
+    handleApplyFilters,
+    handleCloseEditTransactionModal,
+    handleOpenEditTransactionModal,
+    isEditModalOpen,
+    transactionBeingEdit,
   } = useTransactionsController();
 
   const hasTransactions = transactions.length > 0;
@@ -39,11 +48,15 @@ export function Transactions() {
           <FiltersModal
             open={isFiltersModalOpen}
             onClose={handleCloseFiltersModal}
+            onApplyFilters={(filters) => handleApplyFilters(filters)}
           />
 
           <header>
             <div className="flex items-center justify-between">
-              <TransactionTypeDropdown />
+              <TransactionTypeDropdown
+                onSelect={handleChangeFilters("type")}
+                selectedType={filters.type}
+              />
 
               <button onClick={handleOpenFiltersModal}>
                 <FilterIcon />
@@ -51,7 +64,14 @@ export function Transactions() {
             </div>
 
             <div className="mt-6 relative">
-              <Swiper slidesPerView={3} centeredSlides>
+              <Swiper
+                slidesPerView={3}
+                initialSlide={filters.month}
+                centeredSlides
+                onSlideChange={(swiper) => {
+                  handleChangeFilters("month")(swiper.realIndex);
+                }}
+              >
                 <SliderNavigation />
                 {MONTHS.map((month, index) => (
                   <SwiperSlide key={month}>
@@ -86,26 +106,52 @@ export function Transactions() {
 
             {hasTransactions && !isLoading && (
               <>
-                <div className="bg-white p-4 rounded-2xl flex items-center justify-between gap-4">
-                  <div className="flex-1 flex items-center gap-3">
-                    <CategoryIcon type="expense" />
+                {transactionBeingEdit && (
+                  <EditTransactionModal
+                    onClose={handleCloseEditTransactionModal}
+                    open={isEditModalOpen}
+                    transaction={transactionBeingEdit}
+                  />
+                )}
 
-                    <div className="">
-                      <strong className="font-bold tracking-[-0.5px] block">
-                        Almoço
-                      </strong>
-                      <span className="text-sm text-gray-600">01/01/2020</span>
-                    </div>
-                  </div>
-                  <span
-                    className={cn(
-                      "text-red-800 tracking-[-0.5px] font-medium",
-                      !areValuesVisible && "blur-sm"
-                    )}
+                {transactions.map((transaction) => (
+                  <div
+                    className="bg-white p-4 rounded-2xl flex items-center justify-between gap-4"
+                    key={transaction.id}
+                    role="button"
+                    onClick={() => handleOpenEditTransactionModal(transaction)}
                   >
-                    {formatCurrency(-1320.57)}
-                  </span>
-                </div>
+                    <div className="flex-1 flex items-center gap-3">
+                      <CategoryIcon
+                        type={
+                          transaction.type === "EXPENSE" ? "expense" : "income"
+                        }
+                        category={transaction.category?.icon}
+                      />
+
+                      <div className="">
+                        <strong className="font-bold tracking-[-0.5px] block">
+                          {transaction.name}
+                        </strong>
+                        <span className="text-sm text-gray-600">
+                          {formatDate(new Date(transaction.date))}
+                        </span>
+                      </div>
+                    </div>
+                    <span
+                      className={cn(
+                        "tracking-[-0.5px] font-medium",
+                        !areValuesVisible && "blur-sm",
+                        transaction.type === "EXPENSE"
+                          ? "text-red-800"
+                          : "text-green-800"
+                      )}
+                    >
+                      {transaction.type === "EXPENSE" ? "- " : "+ "}
+                      {formatCurrency(transaction.value)}
+                    </span>
+                  </div>
+                ))}
               </>
             )}
           </div>

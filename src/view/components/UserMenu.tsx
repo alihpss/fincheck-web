@@ -1,9 +1,9 @@
 import { ExitIcon } from "@radix-ui/react-icons";
-import { DropdownMenu } from "./DropdownMenu";
 import { useAuth } from "../../app/hooks/useAuth";
+import { DropdownMenu } from "./DropdownMenu";
 
 export function UserMenu() {
-  const { signout } = useAuth();
+  const { signout, user } = useAuth();
 
   return (
     <DropdownMenu.Root>
@@ -13,7 +13,7 @@ export function UserMenu() {
       border-teal-100 "
         >
           <span className=" text-sm tracking[-0.5px] text-teal-900 font-medium ">
-            TE
+            {user?.name.slice(0, 2).toUpperCase()}
           </span>
         </div>
       </DropdownMenu.Trigger>
